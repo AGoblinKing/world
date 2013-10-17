@@ -1,0 +1,20 @@
+{
+  "name": "world",
+  "version": "0.0.0",
+  "description": "The world seed.",
+  "main": "cli.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "sockjs": "*",
+    "optimist": "*",
+    "node-static": "*",
+    "glob": "*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD-2-Clause"
+}

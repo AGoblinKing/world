@@ -1,0 +1,6 @@
+{ 
+    "entities": [{ 
+        "type": "login",
+        "id": "login"
+    }] 
+}

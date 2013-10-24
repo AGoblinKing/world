@@ -10,7 +10,8 @@
     "sockjs": "*",
     "optimist": "*",
     "node-static": "*",
-    "glob": "*"
+    "glob": "*",
+    "eventemitter2": ""
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

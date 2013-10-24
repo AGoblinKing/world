@@ -7,6 +7,7 @@ var argv = require("optimist")
     node_static = require("node-static"),
     path = require("path"),
     State = require("./lib/state"),
+    Player = require("./lib/player"),
     glob = require("glob"),
     fs = require("fs");
 
@@ -41,7 +42,14 @@ function ready(state) {
     server.addListener('request', function(req, res) {
         static_client.serve(req, res, function(e) {
            if(e && e.status === 404) {
-               static_game.serve(req, res);
+               static_game.serve(req, res, function(e) {
+                    var types = state.types(),
+                        out = "";
+                    Object.keys(types).forEach(function(key) {
+                        out += "<link rel=\"import\" href=\""+types[key]+"/"+key+".html"+"\">"; 
+                    });
+                    res.end(out); 
+               });;
            } 
         });
     });

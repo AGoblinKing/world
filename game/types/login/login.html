@@ -1,0 +1,20 @@
+<polymer-element name="game-login">
+    <template>
+        <form on-submit="login">
+            <label>Name</label>
+            <input type="text" id="name"/>
+            <button>Login</button>
+        </form>
+    </template>
+    <script>
+        Polymer("game-login", {
+            created: function() {
+                
+            },
+            login: function(e) {
+                e.preventDefault();
+                remote.send("login", {name: this.$.name.value});   
+            }
+        });
+    </script>
+</polymer-element>

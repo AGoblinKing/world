@@ -11,7 +11,9 @@
     "optimist": "*",
     "node-static": "*",
     "glob": "*",
-    "eventemitter2": ""
+    "eventemitter2": "",
+    "underscore": "",
+    "node-uuid": ""
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

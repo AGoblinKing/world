@@ -7,12 +7,16 @@ module.exports = function(login) {
     // Only put serializable data in data.    
     login
         .on("player:connect", function(data, player) {
-            player.send("view", this.properties());
+            player.send("view", [this.data()]);
             
-            player.once("login", function() {
-                console.log(arguments);
+            player.once("login", function(ply, params) {
+                // create character and log them in
+                
+                // TODO: add in type checking/error reporting for exposed player interfaces
+                var character = this.state.create("character", {name: params.name});
+                player.send("view", [character.data()]);
             });
         });
     
     return login;
-}
+};

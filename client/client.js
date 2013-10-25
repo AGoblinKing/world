@@ -11,10 +11,21 @@ var remote,
         
         switch(message.event) {
             case "view":
-                var data = message.data;
-                state[data.id] = data;
-                document.body.innerHTML += "<game-"+data.type+" uuid=\""+data.id+"\" />";
+                var elements = message.data;
+                elements.forEach(function(data) {
+                    if(!state[data.id]) {
+                        state[data.id] = data;
+                        document.body.innerHTML += "<game-"+data.type+" uuid=\""+data.id+"\" />";
+                    } else {
+                        _.extend(state[data.id], data);
+                    }
+                });
                 break;
+            case "destroy":
+                var elements = message.data;
+                elements.forEach(function(uuid) {
+                    document.body.removeChild(document.body.querySelector("[uuid="+uuid+"]"));
+                });
         }
     };
     

@@ -29,9 +29,11 @@ function ready(state) {
         players = [];
     
     game.on("connection", function(conn) {
-        players.push(
-            Player({conn: conn, state: state}).join()
-        );
+        if(conn) {
+            players.push(
+                Player({conn: conn, state: state}).join()
+            );
+        }
     });
     
     var static_game = new node_static.Server(path.join(__dirname, "game")),

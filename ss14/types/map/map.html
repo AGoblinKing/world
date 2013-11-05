@@ -1,0 +1,27 @@
+<polymer-element name="game-map" extends="three-object3d" attributes="uuid">
+    <template>
+        <!-- Add material and geometry I need here -->
+        <three-meshmaterial type="basic" id="wallMat" color="0xFF0000"></three-meshmaterial>
+        <three-meshmaterial type="basic" id="floorMat" color="0x00FF00"></three-meshmaterial>
+        <three-cube width="1" height="1" depth="1" id="mapGeo"></three-cube>
+    </template>
+    <script>
+        Polymer("game-map", {
+            ready: function() {
+                this.super(arguments);
+                
+                this.data = Game.state[this.uuid];
+                Object.keys(this.data.map).forEach(function(loc) {
+                    var value = this.data.map[loc],
+                        mesh = new THREE.Mesh(this.$.mapGeo.three, value === "*" ? this.$.wallMat.three : this.$.floorMat.three),
+                        pos = loc.split(",");
+                    
+                    mesh.position.set(pos[0], value === "*" ? 1 : 0, pos[1]);
+                    
+                    this.three.add(mesh);
+                                            
+                }.bind(this));
+            }
+        });
+    </script>
+</polymer-element>

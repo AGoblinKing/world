@@ -1,0 +1,20 @@
+<link rel="import" href="three-polymer/elements/three-scene.html"/>
+
+<polymer-element name="game-ss14" extends="three-scene" style="height:100%; width:100%;" attributes="uuid">
+    <template>
+        <three-camera aspect="{{aspect}}"></three-camera>
+    </template>
+    <script>
+        Polymer("game-ss14", {
+            ready: function() {
+                this.aspect = this.clientWidth/this.clientHeight;
+                this.data = Game.state[this.uuid];
+                Game.target = this; 
+                
+                this.super(arguments);
+                
+                Game.remote.send("ready");
+            }
+        });
+    </script>
+</polymer-element>

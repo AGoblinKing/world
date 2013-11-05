@@ -1,0 +1,9 @@
+{ 
+    "entities": [{
+        "type": "ss14",
+        "id": "ss14"
+    }, {
+        "type": "map",
+        "id": "map"
+    }] 
+}

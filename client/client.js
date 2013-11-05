@@ -1,39 +1,33 @@
-var remote,
-    state = {};
+var Game = {
+        target: null,
+        state: {},
+        remote: null
+    };
 
 (function() {
-    var client = new SockJS("/remote");
+    var client = io.connect(undefined, {reconnect: false});
+
+    client.on("view", function(elements) {
+        elements.forEach(function(data) {
+            if(!Game.state[data.id]) {
+                Game.state[data.id] = data;
+                if(!Game.target) Game.target = document.body;
+                Game.target.innerHTML += "<game-"+data.type+" uuid=\""+data.id+"\" />";
+            } else {
+                _.extend(Game.state[data.id], data);
+            }
+        });
+    });
     
-    client.onopen = function() {};
+    client.on("destroy", function(elements) {
+        elements.forEach(function(uuid) {
+            Game.target.removeChild(document.body.querySelector("[uuid="+uuid+"]"));
+        });
+    });    
     
-    client.onmessage = function(e) {   
-        var message = JSON.parse(e.data);
-        
-        switch(message.event) {
-            case "view":
-                var elements = message.data;
-                elements.forEach(function(data) {
-                    if(!state[data.id]) {
-                        state[data.id] = data;
-                        document.body.innerHTML += "<game-"+data.type+" uuid=\""+data.id+"\" />";
-                    } else {
-                        _.extend(state[data.id], data);
-                    }
-                });
-                break;
-            case "destroy":
-                var elements = message.data;
-                elements.forEach(function(uuid) {
-                    document.body.removeChild(document.body.querySelector("[uuid="+uuid+"]"));
-                });
-        }
-    };
-    
-    client.onclose = function() {};
-    
-    remote = {
+    Game.remote = {
         send: function(name, data) {
-            client.send(JSON.stringify({name: name, data: data}));   
+            client.emit(name, data ? data : {}); 
         }
     };
 } ());

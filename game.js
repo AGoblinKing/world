@@ -3,7 +3,7 @@ var argv = require("optimist")
         .default("game", "./game")
         .argv,
     http = require("http"),
-    sockjs = require("sockjs"),
+    io = require("socket.io"),
     node_static = require("node-static"),
     path = require("path"),
     State = require("./lib/state"),
@@ -25,7 +25,31 @@ glob(argv.game + "/**/*.entity.js", function(err, files) {
 
 // Start Server
 function ready(state) {
-    var game = sockjs.createServer(), 
+
+    
+    var static_game = new node_static.Server(path.join(__dirname, argv.game)),
+        static_client = new node_static.Server(path.join(__dirname, "client"));
+        
+    var server = http.createServer();
+    
+    server.addListener('request', function(req, res) {
+        static_client.serve(req, res, function(e) {
+           if(e && e.status === 404) {
+               static_game.serve(req, res, function(e) {
+                    if(e && e.status === 404) {
+                        var types = state.types(),
+                            out = "";
+                        Object.keys(types).forEach(function(key) {
+                            out += "<link rel=\"import\" href=\"/types/"+types[key]+"/"+key+".html"+"\">"; 
+                        });
+                        res.end(out); 
+                    }
+               });;
+           } 
+        });
+    });
+    
+    var game = require("socket.io").listen(server),
         players = [];
     
     game.on("connection", function(conn) {
@@ -36,27 +60,6 @@ function ready(state) {
         }
     });
     
-    var static_game = new node_static.Server(path.join(__dirname, "game")),
-        static_client = new node_static.Server(path.join(__dirname, "client"));
-        
-    var server = http.createServer();
-    
-    server.addListener('request', function(req, res) {
-        static_client.serve(req, res, function(e) {
-           if(e && e.status === 404) {
-               static_game.serve(req, res, function(e) {
-                    var types = state.types(),
-                        out = "";
-                    Object.keys(types).forEach(function(key) {
-                        out += "<link rel=\"import\" href=\""+types[key]+"/"+key+".html"+"\">"; 
-                    });
-                    res.end(out); 
-               });;
-           } 
-        });
-    });
-    
-    game.installHandlers(server, {prefix: "/remote"});
     
     console.log("Listening on 0.0.0.0:", argv.port);
     server.listen(argv.port);

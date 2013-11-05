@@ -7,8 +7,8 @@ module.exports = function(login) {
     // Only put serializable data in data.    
     login
         .on("player:connect", function(data, player) {
-            player.send("view", [this.data()]);
-            
+            player.send("view", [data]);
+             
             player.once("login", function(ply, params) {
                 // create character and log them in
                 

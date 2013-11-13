@@ -1,34 +1,20 @@
-function generateMap() {
-    var rawData = "\
-**********************************\n\
-* **************************** * *\n\
-* * *  * * *  * * * * * ** * *  * \n\
-* *  * * * *  * * **  ** * * ** * \n\
-* * *  *  ** *  * * * * * ** **  *\n\
-*  * * * *  ** ** **** ** *** ** *\n\
-*  * * * *  ** * *** * * * * *** *\n\
-**********************************",
-        mapData = {};
-    
-    rawData.split("\n").forEach(function(row, y) {
-        row.split("").forEach(function(char, x) {
-            mapData[[x, y]] = char;
-        });
-    });
-    
-    return mapData;
-}
 
 module.exports = function(map) { 
-    map
-        .bind(function(data) {
-            data.map = generateMap();
-            
-            return this;
-        })
-        .onState("map", function(data, sender) {
-            this.emitTo(sender, "map", this.data());
-        });
+    // name, attribute, default(also informs type)
+    map.types = {"wall": { color: "white" } };
+    
+    
+    map.bind(function(data) {
+        !data.map && (data.map = {});
+        
+        return this;
+    })
+    .on("types", function(data, sender) {
+        this.emitTo(sender, "types", this.types);
+    })
+    .onState("map", function(data, sender) {
+        this.emitTo(sender, "map", this.data());
+    });
     
     return map;
 };

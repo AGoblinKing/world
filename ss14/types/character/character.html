@@ -1,0 +1,31 @@
+<polymer-element name="game-character" extends="three-object3d" attributes="uuid">
+    <script>
+        Polymer("game-character", {
+            speed: 5*.001,
+            ready: function() {
+                this.super(arguments);
+                this.data = Game.state[this.uuid];
+                
+                this.camera = Game.camera;
+                this.keys = {};
+                
+                document.body.addEventListener("keydown", function(e) {
+                    this.keys[String.fromCharCode(e.keyCode).toLowerCase()] = true;
+                }.bind(this));
+                
+                document.body.addEventListener("keyup", function(e) {
+                    this.keys[String.fromCharCode(e.keyCode).toLowerCase()] = false;
+                }.bind(this));
+            },
+            tick: function(delta) {
+                var pos = this.camera.position;
+                
+                this.keys.w && (pos.z -= delta * this.speed);
+                this.keys.s && (pos.z += delta * this.speed);
+                this.keys.a && (pos.x -= delta * this.speed);
+                this.keys.d && (pos.x += delta * this.speed);  
+          
+            }
+        });
+    </script>
+</polymer-element>

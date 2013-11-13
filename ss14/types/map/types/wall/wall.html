@@ -1,0 +1,12 @@
+<polymer-element name="game-wall" extends="game-object" attributes="uuid">
+    <script>
+        Polymer("game-wall", {
+            ready: function() {
+                this.super();
+                this.wall = THREE.SceneUtils.createMultiMaterialObject(new THREE.CubeGeometry(1,1,1), [ new THREE.MeshBasicMaterial({color: 0xFFFFFF}), new THREE.MeshBasicMaterial({color:0x000000, wireframe: true})]);
+
+                this.three.add(this.wall);                
+            }
+        });
+    </script>
+</polymer-element>

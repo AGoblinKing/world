@@ -16,7 +16,8 @@ glob(argv.game + "/**/*.entity.js", function(err, files) {
     fs.readFile(argv.game + "/state.json", function(err, json) {
         var data = {
             entities: err ? [] : JSON.parse(json).entities,
-            types: files ? files : []
+            types: files ? files : [],
+            state: argv.game + "/state.json"
         };
         
         ready(State(data));

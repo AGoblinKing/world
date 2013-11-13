@@ -5,14 +5,16 @@ var Game = {
     };
 
 (function() {
-    var client = io.connect(undefined, {reconnect: false});
+    window.client = io.connect(undefined, {reconnect: false});
 
     client.on("view", function(elements) {
         elements.forEach(function(data) {
             if(!Game.state[data.id]) {
                 Game.state[data.id] = data;
                 if(!Game.target) Game.target = document.body;
-                Game.target.innerHTML += "<game-"+data.type+" uuid=\""+data.id+"\" />";
+                var ugh = document.createElement("div");
+                ugh.innerHTML = "<game-"+data.type+" uuid=\""+data.id+"\" />";
+                Game.target.appendChild(ugh.children[0]);
             } else {
                 _.extend(Game.state[data.id], data);
             }

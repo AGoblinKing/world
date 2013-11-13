@@ -1,18 +1,43 @@
 <link rel="import" href="three-polymer/elements/three-scene.html"/>
+<style>
+    html, body { height: 100%; width: 100%; overflow: hidden; } 
+</style>
 
-<polymer-element name="game-ss14" extends="three-scene" style="height:100%; width:100%;" attributes="uuid">
+<polymer-element name="game-object" extends="three-object3d" attributes="uuid">
+    <script>
+        Polymer("game-object", {
+           ready: function() {
+               this.data = Game.state[this.uuid]; 
+               this.super();
+           }
+        });
+    </script>
+</polymer-element>
+
+
+<polymer-element name="game-ss14" extends="three-scene" attributes="uuid" lightdom>
     <template>
-        <three-camera aspect="{{aspect}}"></three-camera>
+        <style>
+            @host {width: 100%; height: 100%; display: block; background-color: black;}
+        </style>
     </template>
     <script>
         Polymer("game-ss14", {
             ready: function() {
-                this.aspect = this.clientWidth/this.clientHeight;
-                this.data = Game.state[this.uuid];
                 Game.target = this; 
+                Game.scene = this.three;
+                
+                this.data = Game.state[this.uuid];
+            
+                Game.camera = this.camera = new THREE.PerspectiveCamera(45, this.clientWidth/this.clientHeight, 1, 1000);
+                this.camera.position.set(0,10,5);
+                this.camera.lookAt(new THREE.Vector3(0,0,0));
+                
+                this.three.add(new THREE.AmbientLight(0xF0F0F0));
                 
                 this.super(arguments);
                 
+                this.three.add(this.camera);
                 Game.remote.send("ready");
             }
         });

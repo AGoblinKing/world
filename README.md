@@ -28,3 +28,10 @@ Player Object
 -------------
 Player.send
 Player.on
+
+
+Client Design
+-------------
+
+each player "Square" is 3v3
+walls are 3 x 3 x 1

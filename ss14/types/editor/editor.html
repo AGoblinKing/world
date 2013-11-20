@@ -1,4 +1,4 @@
-<polymer-element name="game-editor" extends="three-object3d" attributes="uuid">
+<polymer-element name="game-editor" extends="game-object">
     <template>
         <style>
             @host { width: 100%; height: 100%; display: block; }
@@ -25,9 +25,19 @@
             .target {
                 color: red;   
             }
+            .type.selected {
+                background-color: black;
+                color: white;
+            }
+            .type {
+                text-shadow: 0px 0px 2px  
+            } 
         </style>
         <div id="toolbar">
-            <button click="onEdit">Edit Mode</button>
+            <button click="onEdit">{{data.type}}</button>
+            <template repeat="{{ type in data.types }}">
+                <button class="type" on-click="{{onType}}" data-type="{{type.name}}">{{type.name}}</button>
+            </template>
         </div>
         <div id="bottomToolbar" flexbox>
             <div class="position" flex>{{selected.position.x}},{{selected.position.z}}</div>
@@ -36,24 +46,17 @@
     </template>
     <script>
         Polymer("game-editor", {
-            onEdit: function() {
-                
+            onType: function(e) {
+                $(this.shadowRoot).find(".type").removeClass("selected");
+                e.currentTarget.classList.add("selected");
+                this.currentType = e.currentTarget.getAttribute("data-type");
             },
-            ready: function() {
-                this.data = Game.state[this.uuid];
-                this.super();
-                this.wall = THREE.SceneUtils.createMultiMaterialObject(new THREE.CubeGeometry(1,1,1), [ new THREE.MeshBasicMaterial({color: 0xFFFFFF}), new THREE.MeshBasicMaterial({color:0x000000, wireframe: true})]);
-                
-                this.selection = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({color: 0xFF0000, emissive: 0xFF0000, transparent: true, opacity: .5}));
-                this.selection.rotation.x = -(90 * Math.PI/180);
-                this.selected = this.selection.clone();
-                this.selected.material = new THREE.MeshBasicMaterial({color: 0x00FF00, transparent: true, opactiy: .5});
-                
-                this.three.add(this.selection);
-                this.three.add(this.selected);
-                this.walls = {};
+            setupListeners: function() {                
                 var projector = new THREE.Projector();
-                Game.target.addEventListener("mousemove", function(event) {
+                
+                Game.canvas.addEventListener("mousemove", function(event) {
+                    if(!this.selection) return;
+                    
                     var vector = new THREE.Vector3(
                         ( event.clientX / window.innerWidth ) * 2 - 1,
                         - ( event.clientY / window.innerHeight ) * 2 + 1,
@@ -71,27 +74,34 @@
                     this.selection.position = pos;
                 }.bind(this));
                 
-                Game.target.addEventListener("mousedown", function(event) {
-                    var posKey = this.selection.position.x+":"+this.selection.position.z;
-                    this.selected.position.copy(this.selection.position);
-                    var newWall = this.wall.clone();
+                Game.canvas.addEventListener("mousedown", function(event) {
+                    if(!this.selection) return;
+                    var pos = this.selection.position,
+                        data = {x: pos.x, y: pos.y, z: pos.z, type: this.currentType};
                     
-                    if(!this.walls[posKey] && event.which !== 3) { 
-                        newWall.position.copy(this.selection.position);
-                        newWall.position.y += .5;
-                        this.walls[posKey] = newWall;
-                        this.three.add(newWall);
-                    } else if(event.which === 3) {
-                        console.log("removing", posKey);
-                        this.three.remove(this.walls[posKey]);
-                        delete this.walls[posKey];
-                    }
-                    console.log(posKey, this.walls);
+                    Game.client.emit("editor:"+(event.which === 3 ? "delete" : "create"), data);
+                    
                     event.preventDefault();
                 }.bind(this));
                 
                 Game.target.addEventListener("contextmenu", function(event) { event.preventDefault()});
+            },
+            currentTypeChanged: function() {
+                if(this.selection) {
+                    Game.destroy(this.selection);   
+                }
+                
+                var obj = Game.create({type: this.currentType, id: "local:Editor"}, this);
+                setTimeout(function() {
+                    this.selection = obj.three;
+                }.bind(this), 0);
+            },
+            ready: function() {
+                this.super();
+                $(this).one("type").addClass("selected");
+
+                this.setupListeners();
             }
         });
     </script>
-</polymer-element>w
+</polymer-element>

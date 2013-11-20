@@ -7,8 +7,26 @@
     <script>
         Polymer("game-object", {
            ready: function() {
-               this.data = Game.state[this.uuid]; 
+               this.data = Game.state[this.uuid];               
                this.super();
+               
+               // allow binding to game events
+               if(this.game) {
+                    Object.keys(this.game).forEach(function(event) {
+                       Game.client.on(event, this.game[event].bind(this));
+                    }.bind(this));
+               }
+               
+               //tell the three object about this
+               this.three.game = this;
+               
+               this.observer = new ObjectObserver(this.data, function(added, removed, changed, getOldVal) {
+                    Object.keys(changed).concat(Object.keys(added)).forEach(function(key) {
+                        if(this[key+"Changed"]) {
+                            this[key+"Changed"](changed[key], getOldVal(changed[key]));
+                        }
+                    }.bind(this));
+               }.bind(this));
            }
         });
     </script>
@@ -36,10 +54,11 @@
                 this.three.add(new THREE.AmbientLight(0xF0F0F0));
                 
                 this.super(arguments);
-                
+                Game.canvas = this.renderer.domElement;
                 this.three.add(this.camera);
-                Game.remote.send("ready");
+                
+                Game.client.emit("ready");
             }
         });
     </script>
-</polymer-element>
+</polymer-element>4

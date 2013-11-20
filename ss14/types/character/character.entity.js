@@ -5,18 +5,27 @@ module.exports = function(character) {
             // Consider batching these?
             this.player.send("view", [saw]);
         })
-        .on("map", function(data, sender, mapData) {
-            this.player.send("view", [mapData, this.data()]);
+        .on("emitPlayer", function(data, sender, event) {
+            var args = Array.prototype.slice.call(arguments).splice(3);
+            this.player.send.apply(this.player, [event].concat(args));
+        })
+        .on("onPlayer", function(data, sender, event, callbackEvent) {
+            console.log("Binding player Event", event, callbackEvent);
+            this.player.on(event, function(player) {
+                var args = Array.prototype.slice.call(arguments).splice(1);
+                this.emitTo.apply(this, [sender, callbackEvent].concat(args));
+            }.bind(this));
         })
         .bind(function(data) {
-            // this == character, I wonder which is the better form
+            // need to abstract player out a bit more
             this.player = data.player; 
-            this.emitState("map");
             
-            // Create an editor and look at it
+            this.player.send("view", this.data());
+            this.emitTo("map", "view", true);
+            // Create an editor
             this.editorId = this.id()+"-editor";
-            character.state.create("editor", {id: this.editorId});
-            character.emitTo("@"+this.editorId, "view");
+            this.state.create("editor", {id: this.editorId, character: this.id()});
+            this.emitTo(this.editorId, "view");
             
             return this;
         });

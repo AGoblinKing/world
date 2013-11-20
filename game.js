@@ -40,6 +40,7 @@ function ready(state) {
                     if(e && e.status === 404) {
                         var types = state.types(),
                             out = "";
+                        
                         Object.keys(types).forEach(function(key) {
                             out += "<link rel=\"import\" href=\"/types/"+types[key]+"/"+key+".html"+"\">"; 
                         });

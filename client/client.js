@@ -1,35 +1,55 @@
 var Game = {
         target: null,
         state: {},
-        remote: null
+        client: null,
+        nodes: {},
     };
 
 (function() {
-    window.client = io.connect(undefined, {reconnect: false});
-
-    client.on("view", function(elements) {
+    Game.client = io.connect(undefined, {reconnect: false});
+    
+    Game.create = function(data, target) {
+        Game.state[data.id] = data;
+        if(!Game.target) Game.target = document.body;
+                
+        var ugh = document.createElement("div");
+        target = target ? target : Game.target;
+        
+        ugh.innerHTML = "<game-"+data.type+" uuid=\""+data.id+"\" />";  
+        var obj = target.appendChild(ugh.children[0]);
+        Game.nodes[data.id] = obj;
+        
+        return obj;
+    };
+    
+    Game.destroy = function(data) {
+        typeof data === "string" && (data = {id:data});
+        delete Game.state[data.id];
+        
+        // this should be moved to the three.js specific code.
+        var threeCtx = Game.nodes[data.id].three;
+        if(threeCtx) threeCtx.parent.remove(threeCtx);
+        Game.nodes[data.id].remove();
+        
+        delete Game.nodes[data.id];
+    };
+    
+    Game.client.on("view", function(elements) {
+        elements.length === undefined && (elements = [elements]);
+        
         elements.forEach(function(data) {
             if(!Game.state[data.id]) {
-                Game.state[data.id] = data;
-                if(!Game.target) Game.target = document.body;
-                var ugh = document.createElement("div");
-                ugh.innerHTML = "<game-"+data.type+" uuid=\""+data.id+"\" />";
-                Game.target.appendChild(ugh.children[0]);
+                Game.create(data);
             } else {
                 _.extend(Game.state[data.id], data);
             }
         });
     });
     
-    client.on("destroy", function(elements) {
+    Game.client.on("destroy", function(elements) {
         elements.forEach(function(uuid) {
             Game.target.removeChild(document.body.querySelector("[uuid="+uuid+"]"));
         });
     });    
     
-    Game.remote = {
-        send: function(name, data) {
-            client.emit(name, data ? data : {}); 
-        }
-    };
 } ());

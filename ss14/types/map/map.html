@@ -1,80 +1,23 @@
-<polymer-element name="game-map" extends="three-object3d" attributes="uuid">
+<polymer-element name="game-map" extends="game-object">
     <script>
         (function() {
-            // Walls should be 9x9 Grid of cubes
-            // could explode into cubical mess
-            
-            // should represent the different geometry available
-            var Entities = {
-                wall: function(geo, mat) {
-                    /*var wall = new THREE.Object3D();
-                    
-                    for(var x = 0; x < 3; x++) {
-                        for(var y = 0; y < 3; y++) {
-                            var mesh = new THREE.Mesh(geo, mat);
-                            mesh.position.set(x, y, 0);
-                            wall.add(mesh);
-                        }
-                    }
-                    */
-                    var wall = new THREE.Mesh(geo, mat);
-                    return wall;
-                },
-                floor: function(geo, mat) {
-                    var mesh = new THREE.Mesh(geo, mat);
-                    
-                    mesh.rotation.x = -90*Math.PI/180;
-                    return mesh;
-                }
-            };
-                
-            
-            
             Polymer("game-map", {
                 ready: function() {
-                    this.super(arguments);
-                    
-                    var cube = new THREE.CubeGeometry(.25, 1, 1),
-                        wallMat = new THREE.MeshBasicMaterial({color: 0x5f5f5f}),
-                        floorMat = new THREE.MeshBasicMaterial({color: 0x5F5F5F}),
-                        floorGeo = new THREE.PlaneGeometry(1,1);
+                    this.super();
+                    this.entities = {};
+                    this.renderMap();
+                },
+                renderMap: function() {
+                    Object.keys(this.data.map).forEach(function(key) {
+                        var entity = this.data.map[key];
                         
-                    
-                    this.data = Game.state[this.uuid];
-                    Object.keys(this.data.map).forEach(function(loc) {
-                        var value = this.data.map[loc],
-                            pos = loc.split(",");
-                        
-                        pos.forEach(function(val, key) {
-                           pos[key] = parseInt(val); 
-                        });
-
-                        switch(value) {
-                            case "*":
-                                break;
-                                var mesh = Entities.wall(cube, wallMat);
-                                mesh.position.set(pos[0], 1, pos[1]);
-                                this.three.add(mesh);
-                                break;
-                                
-                            default:
-                                var mesh = Entities.floor(floorGeo, floorMat);
-                                mesh.position.set(pos[0], 0, pos[1]);
-                                this.three.add(mesh);
-                                break;
+                        if(!Game.state[entity.id]) {
+                            this.appendChild(Game.create(entity));
                         }
-     
-                        
-                        /*
-                        if(value === "*") {
-                            THREE.GeometryUtils.merge(wallGeo, mesh);
-                        } else {
-                            THREE.GeometryUtils.merge(floorGeo, mesh);
-                        }*/
-                                      
-                    }.bind(this));
-                    
-;
+                    }.bind(this));  
+                },
+                mapChanged: function() {
+                    this.renderMap();
                 }
             });
         } ());

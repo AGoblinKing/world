@@ -21,11 +21,12 @@
                 }
                 
                 this.obj = THREE.SceneUtils.createMultiMaterialObject(
-                        new THREE.CubeGeometry(1,1,1), 
+                        new THREE.PlaneGeometry(1,1), 
                         [ new THREE.MeshBasicMaterial({color: this.data.color}), new THREE.MeshBasicMaterial({color:0x000000, wireframe: true})]
                     );
                 
                 this.three.add(this.obj); 
+                this.three.rotation.setY(-90*Math.PI/180);
                 this.three.position.set(this.data.x, this.data.y, this.data.z);
             },
             colorChanged: function() {

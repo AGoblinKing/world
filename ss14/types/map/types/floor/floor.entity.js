@@ -1,10 +1,10 @@
-module.exports = function(wall) {
+module.exports = function(floor) {
     
-    wall
+    floor
         .is("corporeal")
         .bind(function(data) {
            data.color !== undefined && (data.color = 0xFFFFFF); 
         });
     
-    return wall;
+    return floor;
 };

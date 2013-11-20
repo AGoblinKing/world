@@ -1,10 +1,9 @@
-<polymer-element name="game-character" extends="three-object3d" attributes="uuid">
+<polymer-element name="game-character" extends="game-object">
     <script>
         Polymer("game-character", {
             speed: 5*.001,
             ready: function() {
                 this.super(arguments);
-                this.data = Game.state[this.uuid];
                 
                 this.camera = Game.camera;
                 this.keys = {};
@@ -18,6 +17,7 @@
                 }.bind(this));
             },
             tick: function(delta) {
+                console.log("hit");
                 var pos = this.camera.position;
                 
                 this.keys.w && (pos.z -= delta * this.speed);

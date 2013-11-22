@@ -44,7 +44,8 @@ function ready(state) {
                         var types = state.components();
                         
                         res.end(types.reduce(function(prev, component) {
-                            return prev += "<link rel=\"import\" href=\"/"+component+"\">\r\n";
+                            var url = component.replace(argv.game, "");
+                            return prev += "<link rel=\"import\" href=\""+url+"\">\r\n";
                         }, ""));
                     }
                });;
@@ -52,7 +53,7 @@ function ready(state) {
         });
     });
     
-    var game = require("socket.io").listen(server),
+    var game = require("socket.io").listen(server, {log:false}),
         players = [];
     
     game.on("connection", function(conn) {

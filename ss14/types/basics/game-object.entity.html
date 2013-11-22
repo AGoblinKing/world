@@ -1,0 +1,57 @@
+<polymer-element name="game-object" extends="three-object3d" attributes="uuid">
+    <script>
+        //kinda a miss-use of .entity.html, should change that
+        !Game.colliders && (Game.colliders = {});
+        
+        Polymer("game-object", {
+            ticker: false,
+            collider: false,
+            static: true,
+            check: function(pos) {
+                return !(Game.colliders[Math.round(pos.x)+":"+Math.round(pos.z)] ? true : false);   
+            },
+            ready: function() {
+                this.data = Game.state[this.uuid];
+                this.super();
+                
+                // allow binding to game events
+                if(this.game) {
+                    Object.keys(this.game).forEach(function(event) {
+                       Game.client.on(event, this.game[event].bind(this));
+                    }.bind(this));
+                }
+                
+                //tell the three object about this
+                this.three.game = this;
+                
+                this.observer = new ObjectObserver(this.data, function(added, removed, changed, getOldVal) {
+                    Object.keys(changed).concat(Object.keys(added)).forEach(function(key) {
+                        if(this[key+"Changed"]) {
+                            this[key+"Changed"](changed[key], getOldVal(changed[key]));
+                        }
+                    }.bind(this));
+                }.bind(this));
+                
+                if(this.ticker) {
+                    Game.tickers[this.data.id] = true;  
+                }
+                
+                if(this.collider) {
+                    if(this.static) {
+                        Game.colliders[this.data.x + ":" + this.data.z] = this;
+                    }
+                }
+            },
+            tick: function(delta) {this.super(delta);},
+            remove: function() {
+                if(this.ticker) {
+                    delete Game.tickers[this.data.id];    
+                }
+                if(this.collider) {
+                    delete Game.colliders[this.data.x+":"+this.data.z];   
+                }
+                this.super();
+            }
+        });
+    </script>
+</polymer-element>

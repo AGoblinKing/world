@@ -2,25 +2,8 @@
     <script>
         (function() {
             Polymer("game-map", {
-                ready: function() {
-                    this.super();
-                    this.entities = {};
-                    this.renderMap();
-                },
-                renderEntity: function(entity) {
-                    if(!Game.state[entity.id]) {
-                        this.appendChild(Game.create(entity));
-                    }
-                },
-                renderMap: function() {
-                    Object.keys(this.data.map).forEach(function(key) {
-                        this.renderEntity(this.data.map[key]);
-                    }.bind(this));
-                },
-                addChanged: function() {
-                    this.data.add.forEach(function(key) {
-                        this.renderEntity(this.data.map[key]);
-                    }.bind(this));
+                updatesChanged: function() {
+                    Game.view(this.data.updates);
                 },
                 removeChanged: function() {
                     this.data.remove.forEach(function(key) {

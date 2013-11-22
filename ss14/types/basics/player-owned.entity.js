@@ -9,5 +9,9 @@ module.exports = function(playerOwned) {
 
             this.on(callbackEvent, callback);
             this.emitTo(data.player, "onPlayer", event, callbackEvent);
+        })
+        .onPlayer("disconnect", function(data, sender) {
+            console.log("player disconnect", this.id());
+            this.destroy(); 
         });
 };

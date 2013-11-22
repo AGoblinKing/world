@@ -10,7 +10,6 @@ module.exports = function(ss14) {
             });
         })
         .on("player:ready", function(data, sender, player) {
-            console.log("hit?");
             ss14.state.create("character", {player: player});
         });
     

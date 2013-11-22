@@ -1,6 +1,7 @@
 <polymer-element name="game-wall" extends="game-object">
     <script>
         Polymer("game-wall", {
+            collider: true,
             ready: function() {
                 this.super();
                 this.makeObject();

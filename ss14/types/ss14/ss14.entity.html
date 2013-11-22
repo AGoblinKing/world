@@ -1,37 +1,8 @@
 <link rel="import" href="three-polymer/elements/three-scene.html"/>
+
 <style>
     html, body { height: 100%; width: 100%; overflow: hidden; }
 </style>
-
-<polymer-element name="game-object" extends="three-object3d" attributes="uuid">
-    <script>
-        Polymer("game-object", {
-           ready: function() {
-               this.data = Game.state[this.uuid];
-               this.super();
-
-               // allow binding to game events
-               if(this.game) {
-                    Object.keys(this.game).forEach(function(event) {
-                       Game.client.on(event, this.game[event].bind(this));
-                    }.bind(this));
-               }
-
-               //tell the three object about this
-               this.three.game = this;
-
-               this.observer = new ObjectObserver(this.data, function(added, removed, changed, getOldVal) {
-                    Object.keys(changed).concat(Object.keys(added)).forEach(function(key) {
-                        if(this[key+"Changed"]) {
-                            this[key+"Changed"](changed[key], getOldVal(changed[key]));
-                        }
-                    }.bind(this));
-               }.bind(this));
-           }
-        });
-    </script>
-</polymer-element>
-
 
 <polymer-element name="game-ss14" extends="three-scene" attributes="uuid" lightdom>
     <template>
@@ -41,12 +12,13 @@
     </template>
     <script>
         Polymer("game-ss14", {
+            ticker: true,
             ready: function() {
                 Game.target = this;
                 Game.scene = this.three;
 
                 this.data = Game.state[this.uuid];
-
+                Game.tickers[this.data.id] = true;  
                 Game.camera = this.camera = new THREE.PerspectiveCamera(45, this.clientWidth/this.clientHeight, 1, 1000);
                 this.camera.position.set(0,10,5);
                 this.camera.lookAt(new THREE.Vector3(0,0,0));

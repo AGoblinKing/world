@@ -6,23 +6,42 @@
                 top:0px;
                 right: 0px;
                 z-index: 6;
+                display: none;
                 color: white;
                 text-shadow: 0px 0px 2px black;
             }
+            #characterInput.self  {
+                display: block;   
+            }
         </style>
+        
         <div id="characterInput">
             <label>Character URL</label>
-            <input id="charUrl" type="text" value="{{charURL}}"/>
+            <input id="charUrl" type="text" on-keypress="{{checkBlur}}" value="{{charURL}}"/>
         </div>
     </template>
     <script>
         Polymer("game-character", {
+            ticker: true,
+            lerp: 0,
             speed: 5*.001,
+            updateRate: 100,
+            lastUpdate: 0,
+            checkBlur: function(e) {
+                if(e.which === 13) {
+                    this.$.charUrl.blur();   
+                }
+            },
             ready: function() {
                 this.super(arguments);
                 this.charURL = this.data.url;
-
-                if(this.data.self) {
+                
+                // private data, need to make a better pattern
+                this.self = this.data.self; 
+                delete this.data.self;
+                
+                if(this.self) {
+                    this.$.characterInput.classList.add("self");
                     this.camera = Game.camera;
                     this.keys = {};
                     this.three.add(this.camera);
@@ -38,9 +57,33 @@
                 var mat = new THREE.SpriteMaterial({map:THREE.ImageUtils.loadTexture("types/character/images/"+this.data.url), useScreenCoordinates: false});
                 this.sprite = new THREE.Sprite(mat);
                 this.sprite.position.set(0,0,0);
+                
+                if(this.data.x) 
+                    this.three.position.set(this.data.x, this.data.y, this.data.z);
 
+                this.target = this.three.position.clone();
                 this.three.add(this.sprite);
                 console.log("added sprite", "types/character/images/"+this.data.url);
+            },
+            
+            // should probably abstract this, and lerp this
+            xChanged: function() {
+                if(!this.self) {
+                    this.target.x = this.data.x;
+                    this.lerp = 0;
+                }
+            }, 
+            yChanged: function() {
+                if(!this.self) {
+                    this.target.y = this.data.y;
+                    this.lerp = 0;
+                }
+            }, 
+            zChanged: function() {
+                if(!this.self) {
+                    this.target.z = this.data.z; 
+                    this.lerp = 0;
+                }
             },
             urlChanged: function() {
                 var mat = new THREE.SpriteMaterial({map:THREE.ImageUtils.loadTexture("types/character/images/"+this.data.url), useScreenCoordinates: false});
@@ -48,16 +91,36 @@
             },
             charURLChanged: function() {
                 this.data.url = this.charURL;
-                Game.client.send("character.update", this.data);
+                this.dirty = true;
             },
             tick: function(delta) {
-                if(this.data.self) {
-                    var pos = this.three.position;
+                if(this.self) {
+                    this.lastUpdate += delta;
+                    var pos = this.three.position.clone();
 
-                    this.keys.w && (pos.z -= delta * this.speed);
-                    this.keys.s && (pos.z += delta * this.speed);
-                    this.keys.a && (pos.x -= delta * this.speed);
-                    this.keys.d && (pos.x += delta * this.speed);
+                    this.keys.w && (pos.z -= delta * this.speed) && (this.dirty = true);
+                    this.keys.s && (pos.z += delta * this.speed) && (this.dirty = true); 
+                    this.keys.a && (pos.x -= delta * this.speed) && (this.dirty = true);
+                    this.keys.d && (pos.x += delta * this.speed) && (this.dirty = true);
+                    
+                    if(this.check(pos)) {
+                        this.three.position = pos;   
+                    }
+                    
+                    if(this.lastUpdate > this.updateRate && this.dirty) {
+                        this.data.x = pos.x;
+                        this.data.y = pos.y;
+                        this.data.z = pos.z;
+                        
+                        Game.client.emit("character.update", this.data); 
+                        
+                        this.lastUpdate = 0;
+                        this.dirty = false;
+                    }
+                } else {
+                    if(this.lerp < 1) 
+                        this.lerp += delta/100;
+                    this.three.position.lerp(this.target, this.lerp);
                 }
             }
         });

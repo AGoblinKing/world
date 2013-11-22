@@ -4,43 +4,55 @@ module.exports = function(map) {
     // maybe move this to data
     map.types = [{name: "wall", params: { color: 0xFFFFFF }}, {name: "floor", params:{}}];
     
+    var view = {};
+    
     map
         .is("watchable")
         .bind(function(data) {
-            !data.map && (data.map = {});
-            !data.add && (data.add = []);
             !data.remove && (data.remove = []);
+            !data.updates && (data.updates = []);
             // if map exists, go create all them.
             return this;
         })
+        .on("add.me", function(data, sender) {
+            this.emit("add", {id: sender});  
+        })
+        .on("add", function(data, sender, entity) {
+            this.emitTo(entity.id, "watch", true);
+        })
+        .on("watch", function(data, sender) {
+            var pdata = this.data();
+            pdata.updates = Object.keys(view).map(function(key) {
+               return view[key]; 
+            });
+            this.emitTo(sender, "watch.update", pdata);  
+        })
         .on("watchers.update", function(data) {
-            data.add = [];
             data.remove = [];
+            data.updates = [];
         })
         .on("editor.create", function(data, sender, entity) {
             var entityId = this.state.create(entity);
-            data.add.push(entityId);
-            this.emitTo(entityId, "view", true);
+            this.emitTo(entityId, "watch", true);
         })
-        .on("watch.destroy", function(data, sender, entity) {
-            if(data.map[entity.id]) {
-                delete data.map[entity.id];
-                data.remove.push(entity.id);
+        .on("watch.destroy", function(data, sender) {
+            console.log("got destroy", sender);
+            if(view[sender]) {
+                delete view[sender];
+                data.remove.push(sender);
                 this.informWatchers();
             }
         })
         .on("watch.update", function(data, sender, entity) {
-            data.map[entity.id] = entity;
+            view[entity.id] = entity;
+            data.updates.push(entity);
             this.informWatchers();
         })
         .on("editor.delete", function(data, sender, entity) {
-            Object.keys(data.map).forEach(function(key) {
-                var realEntity = data.map[key];
-                if(data.map[key].x == entity.x && data.map[key].z == entity.z) {
-                    this.state.destroy(realEntity);
-                    delete data.map[key];
-                    data.remove.push(realEntity.id);
-                    this.informWatchers();
+            Object.keys(view).forEach(function(key) {
+                var realEntity = view[key];
+                if(view[key].x === entity.x && view[key].z === entity.z) {
+                    this.emitTo(realEntity.id, "destroy");
                 }
             }.bind(this));
         })

@@ -6,6 +6,8 @@ var Game = {
     };
 
 (function() {
+    var lastTime = (new Date()).getTime();
+    
     Game.client = io.connect(undefined, {reconnect: false});
     
     Game.create = function(data, target) {
@@ -34,7 +36,7 @@ var Game = {
         delete Game.state[data.id];
     };
     
-    Game.client.on("view", function(elements) {
+    Game.view = function(elements) {
         elements.length === undefined && (elements = [elements]);
         
         elements.forEach(function(data) {
@@ -44,6 +46,23 @@ var Game = {
                 _.extend(Game.state[data.id], data);
             }
         });
+    };
+    Game.tickers = {};
+    
+    Game.tick = function tick() {
+        var newTime = (new Date()).getTime(),
+            delta = newTime - lastTime;
+            
+            Object.keys(Game.tickers).forEach(function(id) {
+                Game.nodes[id].tick(delta); 
+            });
+        
+        lastTime = newTime;
+        requestAnimationFrame(tick);  
+    };
+    
+    Game.client.on("view", function(elements) {
+        Game.view(elements);
     });
     
     Game.client.on("destroy", function(elements) {
@@ -52,4 +71,5 @@ var Game = {
         });
     });    
     
+    Game.tick();
 } ());

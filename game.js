@@ -13,7 +13,7 @@ var argv = require("optimist")
 
 // Load State
 glob(argv.game + "/**/*.entity.js", function(err, types) {
-    glob(argv.game + "/**/*.html", function(err, components) {
+    glob(argv.game + "/**/*.entity.html", function(err, components) {
         fs.readFile(argv.game + "/state.json", function(err, json) {
             var data = {
                 entities: err ? [] : JSON.parse(json).entities,
@@ -44,7 +44,7 @@ function ready(state) {
                         var types = state.components();
                         
                         res.end(types.reduce(function(prev, component) {
-                            return prev += "<link rel=\"import\" href=\""+component+"\">\r\n";
+                            return prev += "<link rel=\"import\" href=\"/"+component+"\">\r\n";
                         }, ""));
                     }
                });;

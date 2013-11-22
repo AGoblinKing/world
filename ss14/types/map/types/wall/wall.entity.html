@@ -19,14 +19,13 @@
                     this.three.remove(this.obj);
                     delete this.obj;
                 }
-                
+
                 this.obj = THREE.SceneUtils.createMultiMaterialObject(
-                        new THREE.PlaneGeometry(1,1), 
+                        new THREE.CubeGeometry(1,1,1),
                         [ new THREE.MeshBasicMaterial({color: this.data.color}), new THREE.MeshBasicMaterial({color:0x000000, wireframe: true})]
                     );
-                
-                this.three.add(this.obj); 
-                this.three.rotation.setY(-90*Math.PI/180);
+
+                this.three.add(this.obj);
                 this.three.position.set(this.data.x, this.data.y, this.data.z);
             },
             colorChanged: function() {

@@ -1,7 +1,7 @@
 module.exports = function(character) { 
 
     character
-        .on("viewed", function(data, sender, saw) {
+        .on("watch.update", function(data, sender, saw) {
             // Consider batching these?
             this.player.send("view", [saw]);
         })
@@ -17,14 +17,18 @@ module.exports = function(character) {
             }.bind(this));
         })
         .bind(function(data) {
-            // need to abstract player out a bit more
-            this.player = data.player; 
+            data.url = "lady.png";
             
-            this.player.send("view", this.data());
+            // need to abstract player out a bit more
+            this.player = data.player;
+            var pdata = this.data();
+            pdata.self = true;
+            this.player.send("view", pdata);
+
             this.emitTo("map", "view", true);
             // Create an editor
             this.editorId = this.id()+"-editor";
-            this.state.create("editor", {id: this.editorId, character: this.id()});
+            this.state.create("editor", {id: this.editorId, player: this.id()});
             this.emitTo(this.editorId, "view");
             
             return this;

@@ -1,6 +1,6 @@
-<polymer-element name="game-wall" extends="game-object">
+<polymer-element name="game-floor" extends="game-object">
     <script>
-        Polymer("game-wall", {
+        Polymer("game-floor", {
             ready: function() {
                 this.super();
                 this.makeObject();
@@ -9,7 +9,7 @@
                 this.three.position.x = this.data.x;
             },
             yChanged: function() {
-                this.three.position.y = this.data.y;
+                this.three.position.y = this.data.y-.5;
             },
             zChanged: function() {
                 this.three.position.z = this.data.z;
@@ -19,14 +19,16 @@
                     this.three.remove(this.obj);
                     delete this.obj;
                 }
-                
+
                 this.obj = THREE.SceneUtils.createMultiMaterialObject(
-                        new THREE.CubeGeometry(1,1,1), 
+                        new THREE.PlaneGeometry(1,1),
                         [ new THREE.MeshBasicMaterial({color: this.data.color}), new THREE.MeshBasicMaterial({color:0x000000, wireframe: true})]
                     );
-                
-                this.three.add(this.obj); 
-                this.three.position.set(this.data.x, this.data.y, this.data.z);
+
+                this.obj.rotation.x = -90*Math.PI/180;
+
+                this.three.add(this.obj);
+                this.three.position.set(this.data.x, this.data.y-.5, this.data.z);
             },
             colorChanged: function() {
                 this.makeObject();

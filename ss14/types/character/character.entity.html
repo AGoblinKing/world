@@ -1,0 +1,65 @@
+<polymer-element name="game-character" extends="game-object">
+    <template>
+        <style>
+            #characterInput {
+                position:absolute;
+                top:0px;
+                right: 0px;
+                z-index: 6;
+                color: white;
+                text-shadow: 0px 0px 2px black;
+            }
+        </style>
+        <div id="characterInput">
+            <label>Character URL</label>
+            <input id="charUrl" type="text" value="{{charURL}}"/>
+        </div>
+    </template>
+    <script>
+        Polymer("game-character", {
+            speed: 5*.001,
+            ready: function() {
+                this.super(arguments);
+                this.charURL = this.data.url;
+
+                if(this.data.self) {
+                    this.camera = Game.camera;
+                    this.keys = {};
+                    this.three.add(this.camera);
+                    document.body.addEventListener("keydown", function(e) {
+                        this.keys[String.fromCharCode(e.keyCode).toLowerCase()] = true;
+                    }.bind(this));
+
+                    document.body.addEventListener("keyup", function(e) {
+                        this.keys[String.fromCharCode(e.keyCode).toLowerCase()] = false;
+                    }.bind(this));
+                }
+
+                var mat = new THREE.SpriteMaterial({map:THREE.ImageUtils.loadTexture("types/character/images/"+this.data.url), useScreenCoordinates: false});
+                this.sprite = new THREE.Sprite(mat);
+                this.sprite.position.set(0,0,0);
+
+                this.three.add(this.sprite);
+                console.log("added sprite", "types/character/images/"+this.data.url);
+            },
+            urlChanged: function() {
+                var mat = new THREE.SpriteMaterial({map:THREE.ImageUtils.loadTexture("types/character/images/"+this.data.url), useScreenCoordinates: false});
+                this.sprite.material = mat;
+            },
+            charURLChanged: function() {
+                this.data.url = this.charURL;
+                Game.client.send("character.update", this.data);
+            },
+            tick: function(delta) {
+                if(this.data.self) {
+                    var pos = this.three.position;
+
+                    this.keys.w && (pos.z -= delta * this.speed);
+                    this.keys.s && (pos.z += delta * this.speed);
+                    this.keys.a && (pos.x -= delta * this.speed);
+                    this.keys.d && (pos.x += delta * this.speed);
+                }
+            }
+        });
+    </script>
+</polymer-element>

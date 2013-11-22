@@ -12,15 +12,18 @@ var argv = require("optimist")
     fs = require("fs");
 
 // Load State
-glob(argv.game + "/**/*.entity.js", function(err, files) {
-    fs.readFile(argv.game + "/state.json", function(err, json) {
-        var data = {
-            entities: err ? [] : JSON.parse(json).entities,
-            types: files ? files : [],
-            state: argv.game + "/state.json"
-        };
-        
-        ready(State(data));
+glob(argv.game + "/**/*.entity.js", function(err, types) {
+    glob(argv.game + "/**/*.html", function(err, components) {
+        fs.readFile(argv.game + "/state.json", function(err, json) {
+            var data = {
+                entities: err ? [] : JSON.parse(json).entities,
+                types: types ? types : [],
+                state: argv.game + "/state.json",
+                components: components ? components : []
+            };
+
+            ready(State(data));
+        });
     });
 }); 
 
@@ -38,13 +41,11 @@ function ready(state) {
            if(e && e.status === 404) {
                static_game.serve(req, res, function(e) {
                     if(e && e.status === 404) {
-                        var types = state.types(),
-                            out = "";
+                        var types = state.components();
                         
-                        Object.keys(types).forEach(function(key) {
-                            out += "<link rel=\"import\" href=\"/types/"+types[key]+"/"+key+".html"+"\">"; 
-                        });
-                        res.end(out); 
+                        res.end(types.reduce(function(prev, component) {
+                            return prev += "<link rel=\"import\" href=\""+component+"\">\r\n";
+                        }, ""));
                     }
                });;
            } 

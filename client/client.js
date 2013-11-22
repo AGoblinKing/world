@@ -24,7 +24,6 @@ var Game = {
     
     Game.destroy = function(data) {
         typeof data === "string" && (data = {id:data});
-        delete Game.state[data.id];
         
         // this should be moved to the three.js specific code.
         var threeCtx = Game.nodes[data.id].three;
@@ -32,6 +31,7 @@ var Game = {
         Game.nodes[data.id].remove();
         
         delete Game.nodes[data.id];
+        delete Game.state[data.id];
     };
     
     Game.client.on("view", function(elements) {

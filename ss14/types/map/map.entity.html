@@ -2,6 +2,10 @@
     <script>
         (function() {
             Polymer("game-map", {
+                ready: function() {
+                    this.super();
+                    this.updatesChanged();  
+                },
                 updatesChanged: function() {
                     Game.view(this.data.updates);
                 },

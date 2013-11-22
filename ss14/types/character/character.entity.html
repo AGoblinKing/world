@@ -119,7 +119,7 @@
                     }
                 } else {
                     if(this.lerp < 1) 
-                        this.lerp += delta/100;
+                        this.lerp += delta/500;
                     this.three.position.lerp(this.target, this.lerp);
                 }
             }

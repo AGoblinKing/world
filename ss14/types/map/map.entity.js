@@ -25,7 +25,7 @@ module.exports = function(map) {
             pdata.updates = Object.keys(view).map(function(key) {
                return view[key]; 
             });
-            this.emitTo(sender, "watch.update", pdata);  
+            this.emitTo(sender, "watch.update", pdata, true);  
         })
         .on("watchers.update", function(data) {
             data.remove = [];
@@ -36,7 +36,6 @@ module.exports = function(map) {
             this.emitTo(entityId, "watch", true);
         })
         .on("watch.destroy", function(data, sender) {
-            console.log("got destroy", sender);
             if(view[sender]) {
                 delete view[sender];
                 data.remove.push(sender);
